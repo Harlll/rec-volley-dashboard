@@ -45,7 +45,15 @@ with tab_files:
                 temp_path = save_uploaded_file_temporarily(uploaded_dvw)
                 plays = parse_dvw_file(temp_path)
 
-                plays["match_name"] = uploaded_dvw.name
+                try:
+                    home_team = str(plays["home_team"].dropna().iloc[0])
+                    away_team = str(plays["visiting_team"].dropna().iloc[0])
+                    match_label = f"{home_team} - {away_team}"
+                except:
+                    match_label = uploaded_dvw.name
+
+                plays["match_name"] = match_label
+
                 all_plays.append(plays)
 
             plays_all = pd.concat(all_plays, ignore_index=True)
@@ -305,6 +313,14 @@ with tab_analysis:
 
             col1, col2, col3, col4, col5 = st.columns(5)
 
+            with col1:
+                match_selected = st.multiselect(
+                    "Match",
+                    sorted(df_analyse["match_name"].dropna().astype(str).unique().tolist()),
+                    default=sorted(df_analyse["match_name"].dropna().astype(str).unique().tolist()),
+                    key="analyse_match_filter"
+                )
+
             with col2:
                 team_selected = st.multiselect(
                     "Équipe",
@@ -329,14 +345,6 @@ with tab_analysis:
                     "Joueur",
                     joueurs_disponibles,
                     default=joueurs_disponibles,
-                    key="analyse_player_filter"
-                )
-
-            with col3:
-                player_selected = st.multiselect(
-                    "Joueur",
-                    sorted(df_analyse["player_name"].dropna().astype(str).unique().tolist()),
-                    default=sorted(df_analyse["player_name"].dropna().astype(str).unique().tolist()),
                     key="analyse_player_filter"
                 )
 
